@@ -1,0 +1,25 @@
+---
+# Install Argo CD server (GitOps UI)
+- name: Ensure argocd namespace exists
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: argocd
+    state: present
+
+- name: Add Argo CD Helm repo
+  kubernetes.core.helm_repository:
+    name: argo
+    repo_url: https://argoproj.github.io/argo-helm
+
+
+- name: Install Argo CD via Helm
+  kubernetes.core.helm:
+    chart_ref: argo/argo-cd
+    release_name: argo-cd
+    namespace: argocd
+    create_namespace: false
+    wait: false           # ← Helm blocks until all resources are ready
+    # timeout: 600         #   (10 min, adjust as desired)
+    # kubeconfig: /etc/rancher/k3s/k3s.yaml
+

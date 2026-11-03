@@ -1,0 +1,27 @@
+---
+- name: Ensure parent directory exists
+  file:
+    path: "{{ project_remote_path | dirname }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Check if project directory is a Git repo
+  stat:
+    path: "{{ project_remote_path }}/.git"
+  register: project_gitdir
+
+- name: Remove non‑Git project directory
+  file:
+    path: "{{ project_remote_path }}"
+    state: absent
+  when: not project_gitdir.stat.exists
+
+- name: Clone or update MLOps Git repository
+  git:
+    repo: "https://github.com/YOUR_USERNAME/YOUR_REPO.git"
+    dest: "{{ project_remote_path }}"
+    version: main
+    update: yes
+    force: yes
+    accept_hostkey: yes

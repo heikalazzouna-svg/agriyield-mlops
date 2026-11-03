@@ -1,0 +1,42 @@
+services:
+
+# --- ETL Job Service ---
+  etl-download:
+    build: ./extract
+    container_name: etl-extract-container
+    volumes:
+      # - ./local_data:/app/data_lake
+      # - /mnt/persistent/data_lake:/app/data_lake  # use persistent storage
+      - /home/cc/swift_s3:/mnt/swift_store
+    # Add this command section:
+    command:
+      - poetry
+      - run
+      - python # Or /usr/local/bin/python3 depending on your base image/install
+      - /app/extract.py # Path to your script inside the container
+      - ${GOOGLE_DRIVE_FOLDER_ID_HRRR} # Positional argument folder_id
+      - ${GOOGLE_DRIVE_FOLDER_ID_USDA} 
+      - --clean # Optional: Add --clean flag if you want it to clean up locally
+
+    environment:
+      # Explicitly pass OpenStack credentials to the container
+      # These are needed by the openstack SDK within the script
+  
+      - GOOGLE_DRIVE_FOLDER_ID_HRRR=${GOOGLE_DRIVE_FOLDER_ID_HRRR}
+      - GOOGLE_DRIVE_FOLDER_ID_USDA=${GOOGLE_DRIVE_FOLDER_ID_USDA}
+
+  etl-transform:
+    build: ./transform
+    container_name: etl-transform-container
+    volumes:
+
+      - /home/cc/swift_s3:/mnt/swift_store
+    # Add this command section:
+    command:
+      - poetry
+      - run
+      - python # Or /usr/local/bin/python3 depending on your base image/install
+      - /app/transform.py # Path to your script inside the container
+
+      - --clean # Optional: Add --clean flag if you want it to clean up locally
+
