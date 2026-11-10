@@ -13,7 +13,7 @@ services:
       - backend
 
   minio:
-    image: bitnami/minio:latest
+    image: soldevelo/minio:latest
     env_file: .env
     command: server /data
     volumes:
